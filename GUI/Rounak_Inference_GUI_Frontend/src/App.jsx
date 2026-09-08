@@ -153,13 +153,13 @@ export default function App() {
               <div className="grid grid-cols-2 gap-4 w-full h-full">
                 <div className="flex flex-col bg-[#0f1011] rounded-xl border border-[#232529] overflow-hidden">
                   <div className="h-9 border-b border-[#232529] px-3 flex items-center justify-between text-xs font-mono text-[#8a8f98]">
-                    <span>10m Sensor PSF Input</span>
+                    <span>Native Sentinel-2 Input (10m)</span>
                     <span className="text-[10px] text-[#525660]">{colorMode.toUpperCase()}</span>
                   </div>
                   <div className="flex-1 p-4 flex items-center justify-center bg-[#0a0b0d]">
                     <img 
                       src={result.images.lrInput || result.images.bicubic} 
-                      alt="10m Sensor PSF Input" 
+                      alt="Native Sentinel-2 Input" 
                       className="max-h-full object-contain rounded" 
                     />
                   </div>
@@ -168,7 +168,7 @@ export default function App() {
                   <div className="h-9 border-b border-[#232529] px-3 flex items-center justify-between text-xs font-mono text-emerald-400">
                     <span>2.5m HAT-Light Super-Resolved</span>
                     <span className="text-[10px] text-emerald-400 font-semibold font-mono">
-                      {result.metrics?.psnr ? `${result.metrics.psnr} dB` : '+6.75 dB Gain'}
+                      {result.metrics?.outputResolution || '512x512'}
                     </span>
                   </div>
                   <div className="flex-1 p-4 flex items-center justify-center bg-[#0a0b0d]">
@@ -184,8 +184,8 @@ export default function App() {
               <LinearComparisonSlider 
                 beforeImage={result.images.lrInput || result.images.bicubic}
                 afterImage={result.images.superResolved}
-                beforeLabel={`10m Sensor PSF Input (${colorMode.toUpperCase()})`}
-                afterLabel={`2.5m HAT-Light SR (${colorMode.toUpperCase()})`}
+                beforeLabel={`Native Input (${colorMode.toUpperCase()})`}
+                afterLabel={`HAT-Light SR (${colorMode.toUpperCase()})`}
                 metrics={result.metrics}
                 scale={scale}
               />
