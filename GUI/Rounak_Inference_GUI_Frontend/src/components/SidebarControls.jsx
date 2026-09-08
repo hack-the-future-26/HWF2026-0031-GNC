@@ -32,14 +32,6 @@ export default function SidebarControls({
   setCustomFile,
   customPath,
   setCustomPath,
-  scale,
-  setScale,
-  useTiling,
-  setUseTiling,
-  tileSize,
-  setTileSize,
-  overlap,
-  setOverlap,
   colorMode,
   setColorMode,
   onRunInference,
@@ -187,13 +179,24 @@ export default function SidebarControls({
           /* Multi-Format Custom Ingestion Dropzone */
           <div className="flex flex-col gap-2">
             <MultiFormatDropzone 
-              onFileSelected={(file) => {
-                setCustomFile(file);
-                setCustomPath(file.name);
+              customFile={customFile}
+              onFileSelected={(file, pathStr) => {
+                if (file) {
+                  setCustomFile(file);
+                  setCustomPath(file.name);
+                } else if (pathStr) {
+                  setCustomFile(null);
+                  setCustomPath(pathStr);
+                }
               }}
               customPath={customPath}
               setCustomPath={setCustomPath}
+              onLoadTrigger={onRunInference}
             />
+            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-[#141517] border border-[#232529] text-[10px] text-[#8a8f98] font-mono leading-relaxed">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <span>Automated sliding-window tiling (128px window, 32px overlap) engages seamlessly whenever custom input exceeds single-pass dimensions.</span>
+            </div>
           </div>
         )}
 
@@ -232,87 +235,24 @@ export default function SidebarControls({
           </div>
         </div>
 
-        {/* Continuous Scale Factor */}
+        {/* Super-Resolution Scale (Fixed 4x Benchmark) */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[11px] font-mono text-[#8a8f98] flex items-center justify-between">
-            <span>Super-Resolution Scale:</span>
-            <span className="text-emerald-400 font-semibold">{scale}x Continuous</span>
+            <span>Super-Resolution Factor:</span>
+            <span className="text-emerald-400 font-semibold font-mono">4.0× Fixed</span>
           </label>
-          <div className="grid grid-cols-4 gap-1.5">
-            {[2, 3, 4, 8].map((s) => (
-              <button
-                key={s}
-                onClick={() => setScale(s)}
-                className={`py-1 rounded-md text-xs font-mono font-semibold transition-all border ${
-                  scale === s
-                    ? 'border-[#5e6ad2] bg-[#5e6ad2]/20 text-white shadow-sm'
-                    : 'border-[#232529] bg-[#141517] text-[#8a8f98] hover:text-white'
-                }`}
-              >
-                {s}x
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Seamless 2D Hann-Window Sliding Tiling Engine */}
-        <div className="flex flex-col gap-2 p-2.5 rounded-lg border border-[#232529] bg-[#141517]">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-white flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-[#5e6ad2]" />
-              Seamless Sliding Tiling
-            </span>
-            <input 
-              type="checkbox"
-              checked={useTiling}
-              onChange={(e) => setUseTiling(e.target.checked)}
-              className="accent-[#5e6ad2] cursor-pointer w-4 h-4 rounded"
-            />
-          </div>
-
-          {useTiling && (
-            <div className="flex flex-col gap-2 pt-2 border-t border-[#232529] animate-in fade-in duration-150">
-              <div className="flex items-center justify-between text-[11px] font-mono text-[#8a8f98]">
-                <span>Tile Window Size:</span>
-                <span className="text-white font-semibold">{tileSize}px</span>
-              </div>
-              <div className="grid grid-cols-3 gap-1">
-                {[64, 128, 256].map((ts) => (
-                  <button
-                    key={ts}
-                    onClick={() => setTileSize(ts)}
-                    className={`py-0.5 rounded text-[10px] font-mono border ${
-                      tileSize === ts
-                        ? 'border-[#5e6ad2] bg-[#5e6ad2]/20 text-white font-semibold'
-                        : 'border-[#232529] bg-[#1c1d20] text-[#8a8f98]'
-                    }`}
-                  >
-                    {ts}px
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] font-mono text-[#8a8f98] mt-1">
-                <span>Tile Border Overlap:</span>
-                <span className="text-white font-semibold">{overlap}px</span>
-              </div>
-              <div className="grid grid-cols-3 gap-1">
-                {[16, 32, 64].map((ov) => (
-                  <button
-                    key={ov}
-                    onClick={() => setOverlap(ov)}
-                    className={`py-0.5 rounded text-[10px] font-mono border ${
-                      overlap === ov
-                        ? 'border-[#5e6ad2] bg-[#5e6ad2]/20 text-white font-semibold'
-                        : 'border-[#232529] bg-[#1c1d20] text-[#8a8f98]'
-                    }`}
-                  >
-                    {ov}px
-                  </button>
-                ))}
+          <div className="py-2 px-3 rounded-lg border border-[#5e6ad2]/40 bg-[#5e6ad2]/10 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#5e6ad2]" />
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-white">4× Fixed Scale</span>
+                <span className="text-[10px] text-[#8a8f98] font-mono">Benchmark Calibrated</span>
               </div>
             </div>
-          )}
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-semibold">
+              10m → 2.5m GSD
+            </span>
+          </div>
         </div>
       </div>
 

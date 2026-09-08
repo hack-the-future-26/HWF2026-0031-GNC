@@ -47,9 +47,6 @@ export const inferenceService = {
     patchPath = '',
     inputMode = 'curated',
     scale = 4.0,
-    useTiling = false,
-    tileSize = 128,
-    overlap = 32,
     colorMode = 'rgb'
   }) {
     const res = await fetch(`${API_BASE_URL}/api/infer`, {
@@ -57,10 +54,7 @@ export const inferenceService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         patch_path: patchPath,
-        scale: Number(scale),
-        use_tiling: Boolean(useTiling),
-        tile_size: Number(tileSize),
-        overlap: Number(overlap),
+        scale: 4.0,
         color_mode: colorMode
       })
     });
@@ -70,10 +64,11 @@ export const inferenceService = {
     return await res.json();
   },
 
-  async uploadAndInfer(file, scale = 4.0) {
+  async uploadAndInfer(file, scale = 4.0, colorMode = 'rgb') {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('scale', scale);
+    formData.append('scale', '4.0');
+    formData.append('color_mode', colorMode);
 
     const res = await fetch(`${API_BASE_URL}/api/infer/upload`, {
       method: 'POST',

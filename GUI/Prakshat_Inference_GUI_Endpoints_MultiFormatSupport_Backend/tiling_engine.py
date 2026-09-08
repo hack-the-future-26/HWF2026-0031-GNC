@@ -20,8 +20,8 @@ def cpu_tiled_inference(
     model: torch.nn.Module,
     lr_tensor: torch.Tensor,
     scale: float = 4.0,
-    tile_size: int = 64,
-    overlap: int = 16,
+    tile_size: int = 128,
+    overlap: int = 32,
     device: torch.device = torch.device("cpu")
 ) -> torch.Tensor:
     """

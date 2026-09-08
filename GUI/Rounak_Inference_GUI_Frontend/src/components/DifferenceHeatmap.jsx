@@ -3,7 +3,6 @@ import { Flame, Sparkles, Sliders, Info, Eye } from 'lucide-react';
 
 export default function DifferenceHeatmap({ heatmapImage, metrics }) {
   const [boost, setBoost] = useState(6);
-  const [colormap, setColormap] = useState('inferno');
 
   return (
     <div className="relative w-full h-full flex flex-col bg-[#08090a] rounded-xl border border-[#232529] overflow-hidden">
@@ -29,20 +28,9 @@ export default function DifferenceHeatmap({ heatmapImage, metrics }) {
             <span className="font-mono text-[#8a8f98] w-6">{boost}x</span>
           </div>
 
-          <div className="flex items-center gap-1 text-xs">
-            {['inferno', 'viridis', 'monochrome'].map((c) => (
-              <button
-                key={c}
-                onClick={() => setColormap(c)}
-                className={`px-2 py-0.5 rounded capitalize font-mono text-[11px] ${
-                  colormap === c 
-                    ? 'bg-[#232529] text-amber-400 border border-[#3e424b]' 
-                    : 'text-[#8a8f98] hover:text-white'
-                }`}
-              >
-                {c}
-              </button>
-            ))}
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#1c1d20] border border-[#2e3138] text-[11px] font-mono">
+            <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span className="text-amber-300 font-medium">Inferno</span>
           </div>
         </div>
       </div>

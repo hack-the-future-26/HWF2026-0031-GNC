@@ -17,14 +17,11 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoadingPatches, setIsLoadingPatches] = useState(true);
 
-  // Selected sample & execution parameters
+  // Selected sample & execution parameters (Locked 4x scale benchmark)
   const [selectedSampleId, setSelectedSampleId] = useState('patch_airport_001428.npy');
   const [customFile, setCustomFile] = useState(null);
   const [customPath, setCustomPath] = useState('');
-  const [scale, setScale] = useState(4.0);
-  const [useTiling, setUseTiling] = useState(false);
-  const [tileSize, setTileSize] = useState(128);
-  const [overlap, setOverlap] = useState(32);
+  const scale = 4.0;
   const [colorMode, setColorMode] = useState('rgb');
 
   const [backendStatus, setBackendStatus] = useState(null);
@@ -64,17 +61,24 @@ export default function App() {
   const executeInference = useCallback(async () => {
     setIsInferring(true);
     try {
-      if (inputMode === 'custom' && customFile) {
-        const res = await inferenceService.uploadAndInfer(customFile, scale);
-        setResult(res);
+      if (inputMode === 'custom') {
+        if (customFile) {
+          const res = await inferenceService.uploadAndInfer(customFile, 4.0, colorMode);
+          setResult(res);
+        } else if (customPath && customPath.trim()) {
+          const res = await inferenceService.runInference({
+            patchPath: customPath.trim(),
+            inputMode: 'custom',
+            scale: 4.0,
+            colorMode
+          });
+          setResult(res);
+        }
       } else {
         const res = await inferenceService.runInference({
           patchPath: selectedSampleId,
-          inputMode,
-          scale,
-          useTiling,
-          tileSize,
-          overlap,
+          inputMode: 'curated',
+          scale: 4.0,
           colorMode
         });
         setResult(res);
@@ -84,19 +88,24 @@ export default function App() {
     } finally {
       setIsInferring(false);
     }
-  }, [inputMode, customFile, selectedSampleId, scale, useTiling, tileSize, overlap, colorMode]);
+  }, [inputMode, customFile, customPath, selectedSampleId, colorMode]);
 
   // Trigger inference when parameters change
   useEffect(() => {
-    if (selectedSampleId) {
+    if (inputMode === 'curated' && selectedSampleId) {
+      executeInference();
+    } else if (inputMode === 'custom' && (customFile || (customPath && customPath.trim()))) {
       executeInference();
     }
-  }, [selectedSampleId, scale, colorMode, useTiling, tileSize, overlap, executeInference]);
+  }, [inputMode, selectedSampleId, customFile, customPath, colorMode, executeInference]);
 
-  const currentSample = patches.find(s => s.id === selectedSampleId || s.stem === selectedSampleId) || {
+  const currentSample = (inputMode === 'custom' && (customFile || customPath)) ? {
+    id: customFile ? customFile.name : customPath,
+    name: customFile ? customFile.name : (customPath.split(/[\\/]/).pop() || customPath)
+  } : (patches.find(s => s.id === selectedSampleId || s.stem === selectedSampleId) || {
     id: selectedSampleId || 'patch_airport_001428.npy',
     name: 'Selected Satellite Scene'
-  };
+  });
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#08090a] text-[#f7f8f8] overflow-hidden bg-linear-grid">
@@ -126,14 +135,6 @@ export default function App() {
           setCustomFile={setCustomFile}
           customPath={customPath}
           setCustomPath={setCustomPath}
-          scale={scale}
-          setScale={setScale}
-          useTiling={useTiling}
-          setUseTiling={setUseTiling}
-          tileSize={tileSize}
-          setTileSize={setTileSize}
-          overlap={overlap}
-          setOverlap={setOverlap}
           colorMode={colorMode}
           setColorMode={setColorMode}
           onRunInference={executeInference}
