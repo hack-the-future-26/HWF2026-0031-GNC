@@ -12,6 +12,8 @@ env/
 venv/
 .venv/
 ENV/
+node_modules/
+dist/
 
 # Environment variables
 .env
