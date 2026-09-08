@@ -63,7 +63,7 @@ export default function DifferenceHeatmap({ heatmapImage, metrics }) {
       <div className="p-3 border-t border-[#232529] bg-[#0f1011] flex items-center justify-between text-xs text-[#8a8f98]">
         <div className="flex items-center gap-2">
           <Info className="w-3.5 h-3.5 text-[#5e6ad2]" />
-          <span>Warm yellow/orange pixels indicate fine structural textures recovered by HAT-Light that bicubic downsampling lost.</span>
+          <span>Warm yellow/orange pixels indicate fine geospatial structures (runways, field lines, roof edges) recovered by HAT-Light that sensor PSF degradation blurred.</span>
         </div>
         <div className="font-mono text-[11px]">
           FFT Loss: <span className="text-emerald-400 font-semibold">{metrics?.fftLoss || '0.0074'}</span>

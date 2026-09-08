@@ -5,41 +5,6 @@
 
 const API_BASE_URL = 'http://localhost:8000';
 
-export const CURATED_TEST_SAMPLES = [
-  {
-    id: 'patch_airport_001428.npy',
-    name: 'Frankfurt Intersecting Runways',
-    category: 'Airports & Runways',
-    coords: '50.037° N, 8.562° E',
-    resolution: '10m Native -> 2.5m Super-Resolved',
-    format: 'GeoTIFF / NPY (4-Channel uint16)'
-  },
-  {
-    id: 'patch_military_002130.npy',
-    name: 'Norfolk Naval Station Dry Docks',
-    category: 'Naval & Air Bases',
-    coords: '36.945° N, -76.326° W',
-    resolution: '10m Native -> 2.5m Super-Resolved',
-    format: 'GeoTIFF / NPY (4-Channel uint16)'
-  },
-  {
-    id: 'patch_water_ports_006302.npy',
-    name: 'Rotterdam Maritime Logistics Basin',
-    category: 'Ports & Infrastructure',
-    coords: '51.954° N, 4.128° E',
-    resolution: '10m Native -> 2.5m Super-Resolved',
-    format: 'GeoTIFF / NPY (4-Channel uint16)'
-  },
-  {
-    id: 'patch_urban_004512.npy',
-    name: 'Dubai Industrial Grid & Terminals',
-    category: 'Urban & Industrial',
-    coords: '25.077° N, 55.138° E',
-    resolution: '10m Native -> 2.5m Super-Resolved',
-    format: 'GeoTIFF / NPY (4-Channel uint16)'
-  }
-];
-
 export const inferenceService = {
   async checkHealth() {
     try {
@@ -56,20 +21,26 @@ export const inferenceService = {
       data: {
         status: 'offline',
         device: 'CPU (Waiting for backend)',
-        hardwareNotice: 'Run python GUI/Prakshat_Inference_GUI_Endpoints_MultiFormatSupport_Backend/server.py'
+        hardwareNotice: 'Run python app.py'
       }
     };
   },
 
-  async getTestPatches() {
+  async getTestPatches(category = 'all', search = '', limit = 100) {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/patches/list`);
+      const params = new URLSearchParams();
+      if (category) params.append('category', category);
+      if (search) params.append('search', search);
+      params.append('limit', String(limit));
+
+      const res = await fetch(`${API_BASE_URL}/api/patches/list?${params.toString()}`);
       if (res.ok) {
-        const list = await res.json();
-        if (list.length > 0) return list;
+        return await res.json();
       }
-    } catch (e) {}
-    return CURATED_TEST_SAMPLES;
+    } catch (e) {
+      console.error('Failed to fetch test patches from backend:', e);
+    }
+    return { total: 0, categories: {}, patches: [] };
   },
 
   async runInference({

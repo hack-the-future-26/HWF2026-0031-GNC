@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Move, Maximize2, Split } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Split } from 'lucide-react';
 
 export default function LinearComparisonSlider({
   beforeImage,
   afterImage,
-  beforeLabel = '10m Bicubic LR',
+  beforeLabel = '10m Sensor PSF Input',
   afterLabel = '2.5m HAT-Light SR',
   metrics = null,
   scale = 4.0
@@ -15,20 +15,24 @@ export default function LinearComparisonSlider({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
 
-  const containerRef = useRef(null);
+  const imageWrapperRef = useRef(null);
   const panStartRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef(null);
 
-  const updateSlider = useCallback((clientX) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+  const updateSliderPosition = useCallback((clientX) => {
+    if (!imageWrapperRef.current) return;
+    const rect = imageWrapperRef.current.getBoundingClientRect();
+    if (rect.width <= 0) return;
     const x = clientX - rect.left;
     const pct = Math.max(0, Math.min(100, (x / rect.width) * 100));
     setSliderPos(pct);
   }, []);
 
-  const handleMouseDown = (e) => {
-    if (e.target.closest('.slider-handle')) {
+  const handlePointerDown = (e) => {
+    // If clicking divider or anywhere on image (when not zoomed in for panning), start slider drag
+    if (zoom <= 1 || e.target.closest('.slider-handle') || e.target.closest('.slider-touch-area')) {
       setIsDragging(true);
+      updateSliderPosition(e.clientX);
     } else if (zoom > 1) {
       setIsPanning(true);
       panStartRef.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
@@ -36,9 +40,12 @@ export default function LinearComparisonSlider({
   };
 
   useEffect(() => {
-    const onMouseMove = (e) => {
+    const onPointerMove = (e) => {
       if (isDragging) {
-        updateSlider(e.clientX);
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(() => {
+          updateSliderPosition(e.clientX);
+        });
       } else if (isPanning && zoom > 1) {
         setPan({
           x: e.clientX - panStartRef.current.x,
@@ -47,18 +54,20 @@ export default function LinearComparisonSlider({
       }
     };
 
-    const onMouseUp = () => {
+    const onPointerUp = () => {
       setIsDragging(false);
       setIsPanning(false);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [isDragging, isPanning, zoom, updateSlider]);
+  }, [isDragging, isPanning, zoom, updateSliderPosition]);
 
   const resetView = () => {
     setZoom(1);
@@ -81,6 +90,12 @@ export default function LinearComparisonSlider({
               <span className="text-[#3e424b]">•</span>
               <span className="text-[#8a8f98]">SSIM:</span>
               <span className="text-white font-semibold">{metrics.ssim}</span>
+              {metrics.psnrGain !== undefined && (
+                <>
+                  <span className="text-[#3e424b]">•</span>
+                  <span className="text-emerald-400 font-semibold">+{metrics.psnrGain} dB Gain</span>
+                </>
+              )}
             </>
           )}
         </div>
@@ -114,57 +129,71 @@ export default function LinearComparisonSlider({
 
       {/* Main Canvas Area */}
       <div 
-        ref={containerRef}
-        onMouseDown={handleMouseDown}
-        className={`relative flex-1 overflow-hidden flex items-center justify-center ${
-          zoom > 1 ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-default'
-        }`}
+        className="relative flex-1 overflow-hidden flex items-center justify-center p-4"
+        style={{ cursor: zoom > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
       >
+        {/* Exact Aspect-Ratio Image Bounding Container (Locked 1:1 with drag rect) */}
         <div 
-          className="relative w-full h-full max-w-[900px] max-h-[600px] aspect-square transition-transform duration-75 ease-out"
+          ref={imageWrapperRef}
+          onPointerDown={handlePointerDown}
+          className={`relative w-full h-full max-w-[850px] max-h-[620px] aspect-square rounded-lg border border-[#232529] overflow-hidden bg-[#0a0b0d] shadow-2xl ${
+            isDragging ? 'cursor-ew-resize select-none' : ''
+          }`}
           style={{
-            transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`
+            transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+            transformOrigin: 'center center'
           }}
         >
-          {/* After Image (Super-Resolved - Background Layer) */}
+          {/* Layer 1: Super-Resolved Output (HAT-Light) - Background Layer */}
           <img 
             src={afterImage} 
             alt={afterLabel}
-            className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
           />
 
-          {/* Before Image (Bicubic - Clipped Top Layer) */}
+          {/* Layer 2: 10m Sensor PSF Input (LR) - Clipped Top Layer */}
           <div 
-            className="absolute inset-0 overflow-hidden pointer-events-none"
-            style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}
+            className="absolute inset-0 overflow-hidden pointer-events-none select-none"
+            style={{ 
+              clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` 
+            }}
           >
             <img 
               src={beforeImage} 
               alt={beforeLabel}
-              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
             />
           </div>
 
-          {/* Draggable Divider Line & Linear Handle */}
+          {/* Layer 3: Draggable Divider & Center Pill Handle */}
           <div 
-            className="absolute top-0 bottom-0 z-10 slider-handle"
-            style={{ left: `${sliderPos}%` }}
+            className="absolute top-0 bottom-0 z-10 slider-handle cursor-ew-resize select-none pointer-events-auto"
+            style={{ 
+              left: `${sliderPos}%`,
+              transform: 'translateX(-50%)'
+            }}
           >
-            <div className="absolute top-0 bottom-0 -left-[1px] w-[2px] bg-white/90 shadow-[0_0_8px_rgba(255,255,255,0.6)] cursor-ew-resize">
-              {/* Center Pill Button */}
-              <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-[#0f1011] border border-[#3e424b] shadow-linear-card flex items-center justify-center hover:scale-110 active:scale-95 transition-transform text-[#f7f8f8]">
-                <Split className="w-3.5 h-3.5 text-[#5e6ad2]" />
-              </div>
+            {/* Extended Invisible Touch/Drag Area for Effortless Grabbing */}
+            <div className="absolute inset-y-0 -left-4 -right-4 slider-touch-area" />
+
+            {/* Crisp 2px Divider Line with Subtle Glow */}
+            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[2px] bg-white shadow-[0_0_10px_rgba(255,255,255,0.7)]" />
+
+            {/* Linear-Style Centered Pill Handle */}
+            <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-[#0f1011] border border-[#3e424b] shadow-linear-card flex items-center justify-center hover:scale-110 active:scale-95 transition-transform text-[#f7f8f8]">
+              <Split className="w-3.5 h-3.5 text-[#5e6ad2]" />
             </div>
           </div>
         </div>
 
         {/* Dynamic Edge Badges */}
-        <div className="absolute bottom-4 left-4 z-20 px-2.5 py-1 rounded-md bg-[#0f1011]/80 backdrop-blur-md border border-[#232529] text-xs font-mono text-[#8a8f98] pointer-events-none">
+        <div className="absolute bottom-4 left-4 z-20 px-2.5 py-1 rounded-md bg-[#0f1011]/85 backdrop-blur-md border border-[#232529] text-xs font-mono text-[#8a8f98] pointer-events-none shadow-lg">
           {beforeLabel}
         </div>
-        <div className="absolute bottom-4 right-4 z-20 px-2.5 py-1 rounded-md bg-[#0f1011]/80 backdrop-blur-md border border-[#232529] text-xs font-mono text-emerald-400 pointer-events-none flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <div className="absolute bottom-4 right-4 z-20 px-2.5 py-1 rounded-md bg-[#0f1011]/85 backdrop-blur-md border border-[#232529] text-xs font-mono text-emerald-400 pointer-events-none flex items-center gap-1.5 shadow-lg">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           {afterLabel}
         </div>
       </div>
