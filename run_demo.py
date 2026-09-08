@@ -18,12 +18,17 @@ def find_python_interpreter() -> str:
     if local_venv.exists():
         return str(local_venv)
     
-    # 2. Check parent/sibling virtual environment
+    # 2. Check direct parent directory virtual environment (for subfolder clones)
+    parent_venv = REPO_ROOT.parent / ".venv" / "Scripts" / "python.exe"
+    if parent_venv.exists():
+        return str(parent_venv)
+
+    # 3. Check parent/sibling virtual environment
     sibling_venv = REPO_ROOT.parent / "SIH_SatSuperResoulution" / ".venv" / "Scripts" / "python.exe"
     if sibling_venv.exists():
         return str(sibling_venv)
         
-    # 3. Fallback to currently running interpreter
+    # 4. Fallback to currently running interpreter
     return sys.executable
 
 def main():
