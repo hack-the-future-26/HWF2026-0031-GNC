@@ -23,6 +23,7 @@ dist/
 **/temp_uploads/
 *.npy
 *.npz
+!**/test_dataset/**/*.npy
 
 # Operating System
 .DS_Store
