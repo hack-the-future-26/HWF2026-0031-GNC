@@ -144,6 +144,7 @@ def list_test_patches():
 
 
 @app.post("/api/infer")
+@app.post("/api/infer/tile")
 def run_inference(req: InferRequest):
     model = get_or_load_model()
     t0 = time.time()
@@ -252,6 +253,7 @@ def run_inference(req: InferRequest):
 
 
 @app.post("/api/infer/upload")
+@app.post("/api/infer/upload-image")
 async def run_upload_inference(file: UploadFile = File(...), scale: float = Form(4.0)):
     model = get_or_load_model()
     t0 = time.time()
