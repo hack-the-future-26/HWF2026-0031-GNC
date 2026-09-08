@@ -1,496 +1,120 @@
-# 🚀 Hack the Future 26
-## Team Repository Guide
+# 🛰️ HAT-Light: 4-Channel Multi-Spectral Satellite Super-Resolution Studio
+### High-Fidelity 10m -> 2.5m (4x) Continuous Super-Resolution for RGB + Near-Infrared (NIR) Imagery
+**Hack the Future 2026 Submission** | **Team HTF26-029-GNC**
 
-Welcome to the official GitHub repository for **Team `HTF26-029-GNC`**.
-
-This repository is your team's workspace for developing and submitting your Hack the Future 26 project.
-
-You will use this repository to:
-
-- Store your project code
-- Work together with your teammates
-- Keep track of changes
-- Review each other's work
-- Submit your final project
+[![Zero-GPU CPU Verified](https://img.shields.io/badge/CPU%20Inference-161ms%20%7C%20Zero--GPU%20Ready-emerald.svg)](#-zero-shot-quickstart-for-evaluators)
+[![PSNR Benchmark](https://img.shields.io/badge/Test%20PSNR-40.18%20dB-blue.svg)](#-benchmark-results)
+[![Multi-Format Support](https://img.shields.io/badge/Format-GeoTIFF%20%7C%20NumPy%20%7C%20PNG%20%7C%20JPEG-purple.svg)](#-multi-format-geospatial-engine)
+[![UI Design](https://img.shields.io/badge/Frontend-Linear.app%20Design-indigo.svg)](#-interactive-inference-studio-gui)
 
 ---
 
-# 🔐 Important: How This Repository Works
+## 📌 Executive Summary
 
-The `main` branch is **protected**.
+Satellite imagery from Earth observation constellations (such as Sentinel-2) provides invaluable multispectral data. However, native optical resolution is physically constrained to **10 meters/pixel** across Visible (B02 Blue, B03 Green, B04 Red) and Near-Infrared (B08 NIR) bands.
 
-This means:
+**HAT-Light** solves this challenge by deploying a **Hybrid Attention Transformer** specially calibrated for 4-channel 16-bit satellite reflectance. The system:
+1. **Super-resolves 10m imagery to 2.5m resolution (4x scale)**, bringing out airport runways, shipping containers, building perimeters, and agricultural field boundaries.
+2. **Runs zero-shot on standard CPUs (Zero-GPU required)**: Evaluators can clone and run in **~160 milliseconds per patch** without high-end NVIDIA hardware.
+3. **Preserves Geospatial Georeferencing**: Preserves full Coordinate Reference Systems (CRS) and automatically scales Affine geotransforms in 16-bit GeoTIFF exports.
+4. **Features an Interactive Linear.app-Inspired Studio**: Split-screen comparative slider, high-frequency difference heatmap, dual spectral mode (RGB True Color & Color Infrared / NIR), and multi-format drag-and-drop.
 
-> **You cannot directly push your changes to `main`.**
+---
 
-Don't worry. This is intentional and helps prevent someone from accidentally breaking the team's main code.
+## ⚡ 1-Minute Quickstart for Evaluators
 
-Instead, everyone should work on their **own branch** and then create a **Pull Request**.
+The repository is configured for **instant zero-config launch** on standard consumer PCs and laptops.
 
-The basic workflow is:
+### Method 1: Double-Click Launcher (Windows)
+Double-click **`run_demo.bat`** or **`app.bat`** in the repository root.
 
-```text
-Create a branch
-      ↓
-Make your changes
-      ↓
-Save your changes
-      ↓
-Push your branch
-      ↓
-Create a Pull Request
-      ↓
-Another teammate reviews it
-      ↓
-1 approval required
-      ↓
-Merge into main
-Think of main as the team's safe and stable version of the project.
+### Method 2: Python Command Line
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
 
-🟢 1. Start Working on the Project
+# 2. Launch the Studio (starts CPU inference server & opens browser automatically)
+python app.py
+```
+> The studio will start on **`http://localhost:8000`** and open in your default browser.
 
-When you open the repository, you will see options such as:
+---
 
-Code
-Issues
-Pull requests
-Actions
+## 🏆 Benchmark Results
 
-You normally do not need to change anything in the repository settings.
+Evaluated across **799 curated multi-spectral test patches** from diverse geographic biomes (airports, naval bases, metropolitan grids, maritime ports, and agricultural basins):
 
-The organizers have already configured the repository rules.
+| Metric | Bicubic Baseline | HAT-Light (Our Model) | Net Gain |
+| :--- | :---: | :---: | :---: |
+| **Overall PSNR** | 33.43 dB | **40.18 dB** | **+6.75 dB** 🚀 |
+| **RGB Bands PSNR** | 35.12 dB | **42.45 dB** | **+7.33 dB** |
+| **NIR Band PSNR** | 32.20 dB | **38.64 dB** | **+6.44 dB** |
+| **SSIM** | 0.812 | **0.934** | **+0.122** |
+| **MAE** | 0.042 | **0.012** | **-71.4% Error** |
+| **CPU Latency** | — | **161.9 ms / patch** | **Zero-GPU Ready** |
 
-🌿 2. Create Your Own Branch
+---
 
-A branch is your own working area inside the repository.
+## 🏗️ Technical Architecture & Repository Layout
 
-For example:
-
-main
+```
+HWF2026-0031-GNC/
 │
-├── feature-login
-├── feature-ai-model
-├── fix-camera
-└── docs-readme
-
-You work on your branch instead of directly changing main.
-
-🖱️ Method A: Using GitHub Website
-
-This is the easiest method if you are new to Git.
-
-Step 1
-
-Open the repository on GitHub.
-
-Click the branch selector near the top of the file list.
-
-You will see something similar to:
-
-main ▼
-Step 2
-
-Type the name of your new branch.
-
-Example:
-
-feature-login
-
-Step 3
-
-GitHub will show an option similar to:
-
-Create branch: feature-login from main
-
-Click it.
-
-🎉 Your branch has now been created.
-
-💻 Method B: Using Git
-
-If you are using Git on your computer:
-
-git checkout -b feature-login
-
-Then check your current branch:
-
-git branch
-
-You should see:
-
-* feature-login
-  main
-
-The * means you are currently working on feature-login.
-
-🛠️ 3. Make Your Changes
-
-Now work normally.
-
-You can:
-
-Add files
-Edit files
-Delete files
-Add features
-Fix bugs
-Improve documentation
-
-Your changes are happening on your branch, not directly on main.
-
-💾 4. Save Your Changes
-
-There are two ways to save your work to GitHub.
-
-🖱️ Method A: Using GitHub Website
-
-If you are creating or editing a file directly on GitHub:
-
-Open the file.
-Click the pencil/Edit button.
-Make your changes.
-Scroll down to the commit section.
-Enter a short description.
-
-Example:
-
-Add login page
-Choose:
-
-Create a new branch for this commit and start a pull request
-
-Click Propose changes.
-
-Your changes will now be saved to a branch.
-
-💻 Method B: Using Git
-
-After changing files on your computer:
-
-git add .
-
-Create a commit:
-
-git commit -m "Add login page"
-
-A commit is basically a saved checkpoint of your work.
-
-⬆️ 5. Push Your Branch to GitHub
-
-If you are using Git locally:
-
-git push origin feature-login
-
-Your branch will now appear on GitHub.
-
-If you are using the GitHub website, you do not need this step.
-
-🔀 6. Create a Pull Request
-
-A Pull Request, usually called a PR, means:
-
-"I finished my changes. Can someone check them before they become part of main?"
-
-🖱️ Creating a PR from GitHub
-
-After pushing your branch, GitHub may show:
-
-Compare & pull request
-
-Click it.
-
-If you don't see it:
-
-Open Pull requests.
-Click New pull request.
-Select:
-base: main
-compare: your-branch
-
-Example:
-
-base: main
-compare: feature-login
-Add a clear title
-
-Good:
-
-Add user login system
-
-Bad:
-
-changes
-Explain what you did
-
-Example:
-
-## What I changed
-
-- Added login page
-- Added email validation
-- Added logout button
-
-## Testing
-
-- Tested login with valid credentials
-- Tested invalid password
-
-Then click:
-
-Create pull request
-
-👀 7. Ask a Teammate to Review
-
-Your Pull Request needs to be checked.
-
-Our repository requires:
-
-At least 1 approval before merging.
-
-A teammate should check:
-
-Does the code work?
-Does the feature do what it should?
-Is anything broken?
-Is the code understandable?
-Are there unnecessary changes?
-Are passwords or API keys accidentally included?
-
-If everything looks good, the reviewer can click:
-
-Approve
-
-💬 8. What If the Reviewer Finds a Problem?
-
-Don't worry.
-
-You do not need to create another Pull Request.
-
-Make the required changes on the same branch.
-
-For example:
-
-Reviewer:
-"Please fix the login validation."
-
-        ↓
-
-You fix it
-
-        ↓
-
-Commit the change
-
-        ↓
-
-Push the branch
-
-        ↓
-
-The existing PR automatically updates
-
-The reviewer can then check the new changes.
-
-✅ 9. Merge the Pull Request
-
-Once the Pull Request has received the required approval:
-
-Check that the required approval is present.
-Check that there are no important problems.
-Click Merge pull request.
-Confirm the merge.
-
-The repository allows:
-
-Merge commit
-Squash and merge
-Rebase and merge
-
-If your team isn't sure which one to use, Squash and merge is a simple choice for many small hackathon changes.
-
-🚫 10. Don't Push Directly to Main
-
-Do not try to push directly to main.
-
-For example, this is not allowed:
-
-git push origin main
-
-Instead:
-
-Create branch
-      ↓
-Make changes
-      ↓
-Pull Request
-      ↓
-1 teammate approves
-      ↓
-Merge
-
-This protects everyone's work.
-
-🔥 11. Never Force-Push to Main
-
-Do not try to force-push to main.
-
-Avoid:
-
-git push --force
-
-The protected main branch is designed to prevent this.
-
-🔑 12. NEVER Upload Passwords or API Keys
-
-Very important.
-
-Never put these inside your repository:
-
-API keys
-Passwords
-Access tokens
-Private keys
-Database passwords
-.env files containing real secrets
-
-For example, do NOT commit:
-
-API_KEY=123456789abcdef
-
-inside a public repository.
-
-If you accidentally upload a secret:
-
-Tell the organizers immediately.
-
-Simply deleting the file may not be enough because the secret could still exist in Git history.
-
-📁 13. Keep the Repository Organized
-
-Try to keep the project clean.
-
-For example:
-
-project/
+├── app.py / run_demo.py          # One-shot evaluator application launchers
+├── app.bat / run_demo.bat        # Windows zero-config launch scripts
+├── requirements.txt              # Root consolidated dependencies
 │
-├── src/
-├── docs/
-├── tests/
-├── README.md
-├── requirements.txt
-└── .gitignore
+├── Dataset/
+│   └── Shourya_DataSetConstruct/ # Stage 1: Data pipeline by Shourya
+│       ├── cdse_fetcher.py       # CDSE Copernicus Sentinel-2 automated API ingestion
+│       ├── patch_extractor.py    # 16-bit 4-channel (B04, B03, B02, B08) extraction
+│       ├── psf_degradation.py    # Physical sensor point-spread function simulation
+│       └── split_dataset.py      # Spatial cross-validation dataset splits
+│
+├── Naman_Model&InferenceEndPoints/ # Stage 2: AI model & training by Naman
+│   ├── model/
+│   │   ├── hat_light.py          # Hybrid Attention Transformer architecture
+│   │   ├── losses.py             # Composite loss (Charbonnier + FFT + SAM + SSIM)
+│   │   ├── dataset.py            # uint16 BOA reflectance normalization
+│   │   └── infer.py              # Zero-shot model inference engine
+│   ├── weights/
+│   │   └── best_model.pth        # Trained model checkpoint (100% parameter match)
+│   ├── test_dataset/             # 799 multi-spectral evaluation test patches (HR & LR)
+│   └── evaluation_and_metrics/   # Loss curves, validation graphs, and metrics summary
+│
+└── GUI/
+    ├── Rounak_Inference_GUI_Frontend/ # Stage 3: Studio UI by Rounak
+    │   ├── src/                  # Linear.app-inspired React/Tailwind/Lucide UI
+    │   │   ├── components/       # Split-slider, difference heatmap, dropzone, export
+    │   │   └── services/         # Real API integration service
+    │   └── dist/                 # Pre-compiled high-performance production build
+    │
+    └── Prakshat_Inference_GUI_Endpoints_MultiFormatSupport_Backend/ # Stage 3: Backend by Prakshat
+        ├── server.py             # FastAPI CPU/GPU zero-shot REST server
+        ├── multi_format_io.py    # GeoTIFF, NPY, PNG, JPG I/O with CRS scaling
+        └── tiling_engine.py      # 2D Hann-window sliding tiling for full scenes
+```
 
-Don't upload unnecessary files such as:
+---
 
-Huge videos
-Temporary files
-Build files
-Personal files
-Passwords
-IDE-specific junk
+## 🎨 Interactive Inference Studio Features
 
-Use .gitignore where appropriate.
+1. **Interactive Comparison Split-Slider**: Compare 10m native bicubic baseline vs. 2.5m super-resolved output with real-time zooming and panning.
+2. **High-Frequency Difference Heatmap**: Turbo colormap rendering highlighting restored architectural edges, runways, road networks, and port terminals.
+3. **Dual Spectral Visualization**:
+   - **True Color (RGB)**: Natural color representation (B04, B03, B02).
+   - **Color Infrared (CIR / NIR)**: False-color composite (B08 NIR, B04 Red, B03 Green) highlighting vegetation density and water bodies.
+4. **Seamless Sliding-Window Tiling Engine**: 2D Hann-window blending stitches full-scene satellite tiles without boundary seams or edge artifacts.
+5. **Multi-Format Format-Preserving Export**: Download super-resolved imagery in the exact same format as input (16-bit GeoTIFF with updated Affine geotransform, 4-channel uint16 NumPy, or standard high-res PNG).
 
-🏷️ 14. Use Clear Branch Names
+---
 
-Good examples:
+## 👥 Team HTF26-029-GNC Contributions
 
-feature-login
-feature-chatbot
-feature-dashboard
-fix-payment-error
-fix-camera-bug
-docs-installation
+- **Shourya Bhargava** (`Dataset` / `Work`): CDSE Sentinel-2 data ingestion, PSF degradation pipeline, multi-band extraction, and dataset curation.
+- **Naman** (`Model`): HAT-Light neural architecture design, Composite Multi-Task Physical Loss Suite, model training, checkpoint weights, and benchmark evaluation.
+- **Rounak Kapoor** (`Frontend`): Linear.app-inspired React studio, comparison split slider, difference heatmap component, and spectral toggles.
+- **Prakshat Khunteta** (`Frontend` / `Backend`): Multi-format geospatial I/O (GeoTIFF/NPY/PNG), 2D Hann sliding tiling engine, zero-GPU CPU execution optimization, and one-shot evaluator launchers.
 
-Avoid names such as:
-
-test
-abc
-new
-branch1
-mybranch
-asdf
-
-A clear branch name makes teamwork easier.
-
-📝 15. Use Clear Commit Messages
-
-A commit message should tell your teammates what you changed.
-
-Good
-Add login page
-Fix camera initialization
-Add chatbot API
-Update project documentation
-Avoid
-changes
-update
-done
-final
-final2
-final-final
-
-Keep commit messages short and meaningful.
-
-🧑‍💻 16. Recommended Team Workflow
-
-For every new feature:
-
-1. Start from main
-        ↓
-2. Create a new branch
-        ↓
-3. Work on the feature
-        ↓
-4. Commit your changes
-        ↓
-5. Push the branch
-        ↓
-6. Create Pull Request
-        ↓
-7. Teammate reviews
-        ↓
-8. Get 1 approval
-        ↓
-9. Merge into main
-        ↓
-10. Start the next feature
-🆘 17. If You Get Stuck
-GitHub says your push was rejected
-
-Check that you are not trying to push directly to main.
-
-Create a branch instead.
-
-Your Pull Request cannot be merged
-
-Check whether:
-
-You have the required approval.
-There are merge conflicts.
-GitHub is showing another problem.
-You accidentally committed a secret
-
-Tell the organizers immediately.
-
-You don't understand Git
-
-That's okay.
-
-Ask your teammates or the Hack the Future 26 organizers for help.
-
-🏆 Hack the Future 26
-
-Build together. Review together. Ship together.
-
-Keep main stable.
-
-Work in branches.
-
-Use Pull Requests.
-
-Get your teammate's approval.
-
-Then merge.
-
-Happy hacking! 🚀
+---
+*Built for Hack the Future 2026. All rights reserved.*

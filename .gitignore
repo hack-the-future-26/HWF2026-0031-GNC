@@ -12,6 +12,9 @@ env/
 venv/
 .venv/
 ENV/
+node_modules/
+dist/
+!**/GUI/Rounak_Inference_GUI_Frontend/dist/**
 
 # Environment variables
 .env
@@ -26,3 +29,6 @@ ENV/
 # Operating System
 .DS_Store
 Thumbs.db
+
+# Runtime exports
+exports/
