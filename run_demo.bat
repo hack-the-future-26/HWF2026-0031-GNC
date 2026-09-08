@@ -5,6 +5,8 @@ echo Launching HAT-Light Satellite Super-Resolution Studio (Zero-GPU Ready)
 echo ======================================================================
 IF EXIST ".venv\Scripts\python.exe" (
     .venv\Scripts\python.exe run_demo.py
+) ELSE IF EXIST "..\.venv\Scripts\python.exe" (
+    ..\.venv\Scripts\python.exe run_demo.py
 ) ELSE IF EXIST "..\SIH_SatSuperResoulution\.venv\Scripts\python.exe" (
     ..\SIH_SatSuperResoulution\.venv\Scripts\python.exe run_demo.py
 ) ELSE (
